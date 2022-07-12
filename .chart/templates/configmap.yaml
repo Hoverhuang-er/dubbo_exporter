@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Chart.Name }}
+  labels:
+    tier: devops
+    application: {{ .Chart.Name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  application.properties: |
+    logging.level.root=INFO
+    logging.level.cc.gmem={{ .Values.logLevel }}
+
+    server.port=9100
+    spring.application.name={{ .Chart.Name }}
+    spring.dubbo.server=true
+    spring.dubbo.registry=zookeeper://{{ .Values.zookeeper.host }}:{{ .Values.zookeeper.port }}
+
+    # If true, the first metric put into statMap must have non-zero request(success + failure) count
+    dubbo.exporter.discard.empty.metrics=true
+
+    # masking some label (i.e. setting some label to N/A ) to reduce num of timeseries
+    # no   do not mask anything
+    # cs   mask client & server
+    # csa  mask client, server and dubbo_application
+    dubbo.exporter.pre.aggregate.masking.level=cs
